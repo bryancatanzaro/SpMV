@@ -355,14 +355,15 @@ DiagSpMV::runCLKernels(void)
     
 
    
-    globalThreads[0] = nPoints;
+    globalThreads[0] = (nPoints - 1)/4 + 1;
     localThreads[0]  = 128;
     if (localThreads[0] > globalThreads[0]) {
       localThreads[0] = globalThreads[0];
     }
 
-    globalThreads[0] += localThreads[0] - ((int)nPoints % (int)localThreads[0]);
-    
+    if (globalThreads[0] % localThreads[0] > 0) {
+      globalThreads[0] += localThreads[0] - ((int)globalThreads[0] % (int)localThreads[0]);
+    }
     /* Check group size against kernelWorkGroupSize */
     status = clGetKernelWorkGroupInfo(kernel,
                                       devices[0],
@@ -418,12 +419,14 @@ DiagSpMV::runCLKernels(void)
             "clSetKernelArg failed. (matrix)"))
         return SDK_FAILURE;
 
+
+    int pitch_in_float_4 = pitchf/4;
     
     status = clSetKernelArg(
                     kernel, 
                     3, 
                     sizeof(cl_int), 
-                    (void *)&pitchf);
+                    (void *)&pitch_in_float_4);
     if(!sampleCommon->checkVal(
             status,
             CL_SUCCESS,
