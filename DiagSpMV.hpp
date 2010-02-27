@@ -12,8 +12,8 @@
 #include <SDKUtil/SDKFile.hpp>
 #include <iostream>
 #include "Stencil.h"
-#include <fcntl.h>
-#include <unistd.h>
+//#include <fcntl.h>
+//#include <unistd.h>
 
 /**
  * Diagonal Sparse Matrix Vector Multiply
