@@ -405,9 +405,24 @@ DiagSpMV::runCLKernels(void)
             "clSetKernelArg failed. (nDiag)"))
         return SDK_FAILURE;
 
-    status = clSetKernelArg(
+	int unroll = 5;
+	int nDiagUnroll = nDiag - (nDiag % unroll);
+
+	status = clSetKernelArg(
                     kernel, 
                     2, 
+                    sizeof(cl_int), 
+                    (void *)&nDiagUnroll);
+    if(!sampleCommon->checkVal(
+            status,
+            CL_SUCCESS,
+            "clSetKernelArg failed. (nDiagUnroll)"))
+        return SDK_FAILURE;
+
+
+    status = clSetKernelArg(
+                    kernel, 
+                    3, 
                     sizeof(cl_mem), 
                     (void *)&devMatrix);
     if(!sampleCommon->checkVal(
@@ -419,7 +434,7 @@ DiagSpMV::runCLKernels(void)
     
     status = clSetKernelArg(
                     kernel, 
-                    3, 
+                    4, 
                     sizeof(cl_int), 
                     (void *)&pitchf);
     if(!sampleCommon->checkVal(
@@ -430,7 +445,7 @@ DiagSpMV::runCLKernels(void)
 
     status = clSetKernelArg(
                     kernel, 
-                    4, 
+                    5, 
                     sizeof(cl_mem), 
                     (void *)&devOffsets);
     if(!sampleCommon->checkVal(
@@ -441,7 +456,7 @@ DiagSpMV::runCLKernels(void)
 
     status = clSetKernelArg(
                     kernel, 
-                    5, 
+                    6, 
                     sizeof(cl_mem), 
                     (void *)&devVector);
     if(!sampleCommon->checkVal(
@@ -452,7 +467,7 @@ DiagSpMV::runCLKernels(void)
 
     status = clSetKernelArg(
                     kernel, 
-                    6, 
+                    7, 
                     sizeof(cl_mem), 
                     (void *)&devOutput);
     if(!sampleCommon->checkVal(

@@ -1,6 +1,7 @@
 __kernel
 void diagSpMV(__const int n,
               __const int ndiag,
+              __const int ndiag_unroll,
               __global float *matrix,
               __const int pitch_in_floats,
               __constant int *offsets,
@@ -11,7 +12,52 @@ void diagSpMV(__const int n,
   float accumulant = 0;
   int matrix_offset = row;
   int d = 0;
+  
   if (row < n) {
+	
+	while (d < ndiag_unroll) {
+	  col += offsets[d];
+      if ((col >= 0) && (col < n)) {
+        float m = matrix[matrix_offset];
+        float v = vector[col];
+        accumulant += m * v;
+      }
+      d++;
+      matrix_offset += pitch_in_floats;
+	  col += offsets[d];
+      if ((col >= 0) && (col < n)) {
+        float m = matrix[matrix_offset];
+        float v = vector[col];
+        accumulant += m * v;
+      }
+      d++;
+      matrix_offset += pitch_in_floats;
+      col += offsets[d];
+      if ((col >= 0) && (col < n)) {
+        float m = matrix[matrix_offset];
+        float v = vector[col];
+        accumulant += m * v;
+      }
+      d++;
+      matrix_offset += pitch_in_floats;
+      col += offsets[d];
+      if ((col >= 0) && (col < n)) {
+        float m = matrix[matrix_offset];
+        float v = vector[col];
+        accumulant += m * v;
+      }
+      d++;
+      matrix_offset += pitch_in_floats;
+      col += offsets[d];
+      if ((col >= 0) && (col < n)) {
+        float m = matrix[matrix_offset];
+        float v = vector[col];
+        accumulant += m * v;
+      }
+      d++;
+      matrix_offset += pitch_in_floats;
+      
+	}
     while (d < ndiag) {
       col += offsets[d];
       if ((col >= 0) && (col < n)) {
