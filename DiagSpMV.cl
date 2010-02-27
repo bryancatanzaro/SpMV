@@ -18,12 +18,16 @@ void diagSpMV(__const int n,
     while (d < ndiag) {
       col += offsets[d];
       float4 m = vload4(matrix_offset, matrix);
-      int4 in_bounds = (col >= 0) && (col < n);
       float4 v;
-      v.x = in_bounds.x ? vector[col.x] : 0;
-      v.y = in_bounds.y ? vector[col.y] : 0;
-      v.z = in_bounds.z ? vector[col.z] : 0;
-      v.w = in_bounds.w ? vector[col.w] : 0;
+      if ((col.x >=0) && (col.x < n - 4)) {
+		v = vload4(col.x, vector);
+	  } else {
+		int4 in_bounds = (col >= 0) && (col < n);
+		v.x = in_bounds.x ? vector[col.x] : 0;
+		v.y = in_bounds.y ? vector[col.y] : 0;
+		v.z = in_bounds.z ? vector[col.z] : 0;
+		v.w = in_bounds.w ? vector[col.w] : 0;
+	  }
       accumulant += m * v;
       d++;
       matrix_offset += pitch_in_float_4;
