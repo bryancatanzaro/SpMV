@@ -1,17 +1,17 @@
 #include "DiagSpMV.hpp"
 
-void writeArray(char* file, int ndim, int* dim, float* input) {
-  int fd;
-  fd = open(file, O_CREAT|O_WRONLY|O_TRUNC, 0666);
-  int size = 1;
-  for(int i = 0; i < ndim; i++) {
-    size *= dim[i];
-  }
-  write(fd, &ndim, sizeof(int));
-  write(fd, dim, sizeof(int) * ndim);
-  write(fd, input, sizeof(float) * size);
-  close(fd);
-}
+//void writeArray(char* file, int ndim, int* dim, float* input) {
+//  int fd;
+//  fd = open(file, O_CREAT|O_WRONLY|O_TRUNC, 0666);
+//  int size = 1;
+//  for(int i = 0; i < ndim; i++) {
+//    size *= dim[i];
+//  }
+//  write(fd, &ndim, sizeof(int));
+//  write(fd, dim, sizeof(int) * ndim);
+//  write(fd, input, sizeof(float) * size);
+//  close(fd);
+//}
 
 int iDivCeil(int n, int d) {
   return (n - 1)/d + 1;
@@ -229,9 +229,7 @@ DiagSpMV::setupCL(void)
 
     /* create a CL program using the kernel source */
     streamsdk::SDKFile kernelFile;
-    std::string kernelPath = sampleCommon->getPath();
-    kernelPath.append("DiagSpMV.cl");
-    kernelFile.open(kernelPath.c_str());
+    kernelFile.open("DiagSpMV.cl");
     const char * source = kernelFile.source().c_str();
     size_t sourceSize[] = { strlen(source) };
     program = clCreateProgramWithSource(
@@ -537,10 +535,10 @@ DiagSpMV::runCLKernels(void)
                                "clEnqueueReadBuffer failed."))
       return SDK_FAILURE;
 
-    int dims[2];
-    dims[0] = 1;
-    dims[1] = nPoints;
-    writeArray("output.ary", 2, &dims[0], output); 
+    //int dims[2];
+    //dims[0] = 1;
+    //dims[1] = nPoints;
+    //writeArray("output.ary", 2, &dims[0], output); 
     
     
     return SDK_SUCCESS;
