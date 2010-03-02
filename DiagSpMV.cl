@@ -21,7 +21,7 @@ void diagSpMV(__const int n,
       float4 v;
       if ((col.x >=0) && (col.x < n - 4)) {
         size_t offset = col.x >> 2;
-        size_t inc = col.x & 0x11;
+        size_t inc = col.x & 0x3;
 		v = vload4(offset, vector + inc);
 	  } else {
 		int4 in_bounds = (col >= 0) && (col < n);
