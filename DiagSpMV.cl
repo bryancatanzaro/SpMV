@@ -20,7 +20,9 @@ void diagSpMV(__const int n,
       float4 m = vload4(matrix_offset, matrix);
       float4 v;
       if ((col.x >=0) && (col.x < n - 4)) {
-		v = vload4(col.x, vector);
+        size_t offset = col.x >> 2;
+        size_t inc = col.x & 0x11;
+		v = vload4(offset, vector + inc);
 	  } else {
 		int4 in_bounds = (col >= 0) && (col < n);
 		v.x = in_bounds.x ? vector[col.x] : 0;
