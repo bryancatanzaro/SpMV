@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DiagSpMV", "DiagSpMV.vcproj", "{45160340-8533-4693-BC78-E8B5ABCA417D}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DiagSpMV", "DiagSpMV.vcproj", "{A4119A75-04CE-4EA5-9310-B864AB01DCF6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -9,10 +9,10 @@ Global
 		Release|Win32 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{45160340-8533-4693-BC78-E8B5ABCA417D}.Debug|Win32.ActiveCfg = Debug|Win32
-		{45160340-8533-4693-BC78-E8B5ABCA417D}.Debug|Win32.Build.0 = Debug|Win32
-		{45160340-8533-4693-BC78-E8B5ABCA417D}.Release|Win32.ActiveCfg = Release|Win32
-		{45160340-8533-4693-BC78-E8B5ABCA417D}.Release|Win32.Build.0 = Release|Win32
+		{A4119A75-04CE-4EA5-9310-B864AB01DCF6}.Debug|Win32.ActiveCfg = Debug|Win32
+		{A4119A75-04CE-4EA5-9310-B864AB01DCF6}.Debug|Win32.Build.0 = Debug|Win32
+		{A4119A75-04CE-4EA5-9310-B864AB01DCF6}.Release|Win32.ActiveCfg = Release|Win32
+		{A4119A75-04CE-4EA5-9310-B864AB01DCF6}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

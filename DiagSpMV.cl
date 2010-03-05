@@ -1,11 +1,17 @@
 __kernel
 void diagSpMV(__const int n,
               __const int ndiag,
-              __global float4 *matrix,
+              __global float *matrix,
               __const int pitch_in_float_4,
-              __constant int *offsets,
+              __global int *offsets,
               __global float *vector,
               __global float *result) {
+  __local int l_offsets[256];
+  int local_id = get_local_id(0);
+  if (local_id < 256) {
+	l_offsets[local_id] = offsets[local_id];
+  }           
+  barrier(CLK_LOCAL_MEM_FENCE);            
   unsigned int row = get_global_id(0) * 4;
   int4 col = row;
   col.y += 1;
@@ -16,7 +22,7 @@ void diagSpMV(__const int n,
   int d = 0;
   if (row < n) {
     while (d < ndiag) {
-      col += offsets[d];
+      col += l_offsets[d];
       float4 m = vload4(matrix_offset, matrix);
       float4 v;
       if ((col.x >=0) && (col.x < n - 4)) {
@@ -29,6 +35,7 @@ void diagSpMV(__const int n,
 		v.y = in_bounds.y ? vector[col.y] : 0;
 		v.z = in_bounds.z ? vector[col.z] : 0;
 		v.w = in_bounds.w ? vector[col.w] : 0;
+		
 	  }
       accumulant += m * v;
       d++;
@@ -39,4 +46,5 @@ void diagSpMV(__const int n,
   if (row + 1 < n) result[row+1] = accumulant.y;
   if (row + 2 < n) result[row+2] = accumulant.z;
   if (row + 3 < n) result[row+3] = accumulant.w;
-}
+  
+ }

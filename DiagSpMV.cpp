@@ -1,17 +1,17 @@
 #include "DiagSpMV.hpp"
 
-//void writeArray(char* file, int ndim, int* dim, float* input) {
-//  int fd;
-//  fd = open(file, O_CREAT|O_WRONLY|O_TRUNC, 0666);
-//  int size = 1;
-//  for(int i = 0; i < ndim; i++) {
-//    size *= dim[i];
-//  }
-//  write(fd, &ndim, sizeof(int));
-//  write(fd, dim, sizeof(int) * ndim);
-//  write(fd, input, sizeof(float) * size);
-//  close(fd);
-//}
+void writeArray(char* file, int ndim, int* dim, float* input) {
+  int fd;
+  fd = open(file, O_CREAT|O_WRONLY|O_TRUNC, 0666);
+  int size = 1;
+  for(int i = 0; i < ndim; i++) {
+    size *= dim[i];
+  }
+  write(fd, &ndim, sizeof(int));
+  write(fd, dim, sizeof(int) * ndim);
+  write(fd, input, sizeof(float) * size);
+  close(fd);
+}
 
 int iDivCeil(int n, int d) {
   return (n - 1)/d + 1;
@@ -28,12 +28,12 @@ DiagSpMV::setupSpMV()
   stencil = new Stencil(radius, width, height, pitchf);
   nDiag = stencil->getStencilArea();
   matrix = stencil->readStencilMatrix(file.c_str());
-  // for(int i = 0; i < nDiag; i++) {
-//     for(int j = 0; j < nPoints; j++) {
-//       std::cout << matrix[i * pitchf + j] << ", ";
-//     }
-//     std::cout << std::endl;
-//   }
+  /* for(int i = 0; i < nDiag; i++) {
+     for(int j = 0; j < nPoints; j++) {
+       std::cout << matrix[i * pitchf + j] << ", ";
+     }
+     std::cout << std::endl;
+   }*/
   offsets = (int*)malloc(sizeof(int) * nDiag);
   stencil->copyOffsets(offsets);
   vector = (float*)malloc(sizeof(float) * nPoints);
@@ -535,10 +535,10 @@ DiagSpMV::runCLKernels(void)
                                "clEnqueueReadBuffer failed."))
       return SDK_FAILURE;
 
-    //int dims[2];
-    //dims[0] = 1;
-    //dims[1] = nPoints;
-    //writeArray("output.ary", 2, &dims[0], output); 
+    int dims[2];
+    dims[0] = 1;
+    dims[1] = nPoints;
+    writeArray("output.ary", 2, &dims[0], output); 
     
     
     return SDK_SUCCESS;

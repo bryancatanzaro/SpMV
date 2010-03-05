@@ -12,9 +12,9 @@
 #include <SDKUtil/SDKFile.hpp>
 #include <iostream>
 #include "Stencil.h"
-//#include <fcntl.h>
+#include <fcntl.h>
 //#include <unistd.h>
-
+#include <io.h>
 /**
  * Diagonal Sparse Matrix Vector Multiply
  * Class implements OpenCL Sparse Matrix Vector Multiply sample
