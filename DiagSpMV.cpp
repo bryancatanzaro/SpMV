@@ -13,34 +13,39 @@ void writeArray(char* file, int ndim, int* dim, float* input) {
   close(fd);
 }
 
-int iDivCeil(int n, int d) {
-  return (n - 1)/d + 1;
-}
 
 int 
 DiagSpMV::setupSpMV()
 {
   //ATI GPUs like things to be 128 bit aligned
   int alignmentInFloats = 32; 
-  nPoints = width * height;
-  pitchf = iDivCeil(nPoints, alignmentInFloats) * alignmentInFloats;
-  std::cout << "Pitch in floats: " << pitchf << std::endl;
-  stencil = new Stencil(radius, width, height, pitchf);
-  nDiag = stencil->getStencilArea();
-  matrix = stencil->readStencilMatrix(file.c_str());
-  /* for(int i = 0; i < nDiag; i++) {
-     for(int j = 0; j < nPoints; j++) {
-       std::cout << matrix[i * pitchf + j] << ", ";
-     }
-     std::cout << std::endl;
-   }*/
-  offsets = (int*)malloc(sizeof(int) * nDiag);
-  stencil->copyOffsets(offsets);
+  dia = new Dia(file.c_str(), alignmentInFloats);
+  nDiag = dia->get_ndiags();
+  nPoints = dia->get_n();
+  pitchf = dia->get_matrix_pitch_in_floats();
+  matrix = dia->get_matrix();
+  std::cout <<"nDiag: " << nDiag;
+  std::cout <<" nPoints: " << nPoints;
+  std::cout <<" pitchf: " << pitchf << std::endl;
+  
+//   for(int i = 0; i < nDiag; i++) {
+//      for(int j = 0; j < nPoints; j++) {
+//        std::cout << matrix[i * pitchf + j] << ", ";
+//      }
+//      std::cout << std::endl;
+//   }
+  offsets = dia->get_offsets();
+//   std::cout << "-------------" << std::endl;
+//   std::cout << "Offsets: " << std::endl;
+//   for(int i = 0; i < nDiag; i++) {
+//     std::cout << offsets[i] << std::endl;
+//   }
+  
   vector = (float*)malloc(sizeof(float) * nPoints);
   output = (float*)malloc(sizeof(float) * nPoints);
   
   for(int i = 0; i < nPoints; i++) {
-    vector[i] = 1.0;
+    vector[i] = (float)i/nPoints;
   }  
   return SDK_SUCCESS;
 }
@@ -191,7 +196,7 @@ DiagSpMV::setupCL(void)
     devMatrix = clCreateBuffer(
                                context,
                                CL_MEM_READ_ONLY,
-                               sizeof(cl_float) * nDiag * stencil->getMatrixPitchInFloats(),
+                               sizeof(cl_float) * nDiag * dia->get_matrix_pitch_in_floats(),
                                0,
                                &status);
     devOffsets = clCreateBuffer(
@@ -300,7 +305,7 @@ DiagSpMV::runCLKernels(void)
                                   devMatrix,
                                   CL_TRUE,
                                   0,
-                                  stencil->getMatrixPitch() * nDiag,
+                                  dia->get_matrix_pitch() * nDiag,
                                   matrix,
                                   0,
                                   0,
@@ -581,52 +586,6 @@ DiagSpMV::initialize()
     if(!this->SDKSample::initialize())
         return SDK_FAILURE;
 
-    // Now add customized options
-    streamsdk::Option* o_radius = new streamsdk::Option;
-    if(!o_radius)
-    {
-        sampleCommon->error("Memory allocation error.\n");
-        return SDK_FAILURE;
-    }
-    
-    o_radius->_sVersion = "r";
-    o_radius->_lVersion = "radius";
-    o_radius->_description = "Stencil radius";
-    o_radius->_type = streamsdk::CA_ARG_INT;
-    o_radius->_value = &radius;
-    sampleArgs->AddOption(o_radius);
-    delete o_radius;
-
-    streamsdk::Option* o_width = new streamsdk::Option;
-    if(!o_width)
-    {
-        sampleCommon->error("Memory allocation error.\n");
-        return SDK_FAILURE;
-    }
-    
-    o_width->_sVersion = "w";
-    o_width->_lVersion = "width";
-    o_width->_description = "Grid width";
-    o_width->_type = streamsdk::CA_ARG_INT;
-    o_width->_value = &width;
-    sampleArgs->AddOption(o_width);
-    delete o_width;
-
-    streamsdk::Option* o_height = new streamsdk::Option;
-    if(!o_height)
-    {
-        sampleCommon->error("Memory allocation error.\n");
-        return SDK_FAILURE;
-    }
-    
-    o_height->_sVersion = "h";
-    o_height->_lVersion = "height";
-    o_height->_description = "Grid height";
-    o_height->_type = streamsdk::CA_ARG_INT;
-    o_height->_value = &height;
-    sampleArgs->AddOption(o_height);
-    delete o_height;
-
     streamsdk::Option* o_file = new streamsdk::Option;
     if(!o_file)
     {
@@ -746,7 +705,7 @@ DiagSpMV::printStats()
 
     totalTime = setupTime + totalKernelTime ;
 
-    stats[0] = sampleCommon->toString(width*height, std::dec);
+    stats[0] = sampleCommon->toString(nPoints, std::dec);
     stats[1] = sampleCommon->toString(totalTime, std::dec);
     stats[2] = sampleCommon->toString(totalKernelTime*1000, std::dec);
 
@@ -808,10 +767,9 @@ DiagSpMV::cleanup()
 }
 
 void DiagSpMV::print_state() {
-    std::cout << "Radius " << radius << std::endl;
-    std::cout << "Width " << width << std::endl;
-    std::cout << "Height " << height << std::endl;
     std::cout << "File " << file << std::endl;
+    std::cout << "N: " << nPoints << std::endl;
+    std::cout << "ndiags: " << nDiag << std::endl;
   }
 
 int 
@@ -822,9 +780,9 @@ main(int argc, char * argv[])
     clDiagSpMV.initialize();
     if(!clDiagSpMV.parseCommandLine(argc, argv))
         return SDK_FAILURE;
-    clDiagSpMV.print_state();
     if(clDiagSpMV.setup()!=SDK_SUCCESS)
         return SDK_FAILURE;
+    clDiagSpMV.print_state();
    
     if(clDiagSpMV.run()!=SDK_SUCCESS)
         return SDK_FAILURE;

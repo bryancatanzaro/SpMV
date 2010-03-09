@@ -20,7 +20,7 @@ EXE_TARGET_INSTALL   	= DiagSpMV
 #
 ####
 
-FILES 	= DiagSpMV Stencil
+FILES 	= DiagSpMV Dia
 CLFILES	= DiagSpMV.cl
 
 LLIBS  	+= SDKUtil

@@ -11,10 +11,10 @@
 #include <SDKUtil/SDKCommandArgs.hpp>
 #include <SDKUtil/SDKFile.hpp>
 #include <iostream>
-#include "Stencil.h"
+#include "Dia.h"
 #include <fcntl.h>
-//#include <unistd.h>
-#include <io.h>
+#include <unistd.h>
+//#include <io.h>
 /**
  * Diagonal Sparse Matrix Vector Multiply
  * Class implements OpenCL Sparse Matrix Vector Multiply sample
@@ -27,16 +27,13 @@ class DiagSpMV : public SDKSample
   cl_double     totalKernelTime;       /**< Time for kernel execution */
   cl_double    totalProgramTime;       /**< Time for program execution */
   cl_double referenceKernelTime;       /**< Time for reference implementation */
-  cl_int                 radius;       /**< Radius of the stencil */
-  cl_int                  width;       /**< Width of the grid */
-  cl_int                 height;       /**< Height of the grid */
   cl_int                nPoints;       /**< Width * height */
   cl_int                  nDiag;       /**< Number of diagonals */
   std::string              file;       /**< Filename of matrix */
-  Stencil*              stencil;       /**< Stencil parameters */
-  cl_float              *matrix;       /**< Input array */
+  Dia*                      dia;       /**< Dia parameters */
+  const cl_float        *matrix;       /**< Input array */
   cl_int                 pitchf;       /**< Matrix pitch in floats */
-  cl_int               *offsets;       /**< Input offsets */
+  const cl_int         *offsets;       /**< Input offsets */
   cl_float              *vector;       /**< Input vector */
   cl_float              *output;       /**< Output vector */
   
@@ -62,9 +59,6 @@ public:
      */
   DiagSpMV(std::string name)
     : SDKSample(name){
-    radius = 1;
-    width = 4;
-    height = 4;
     file = "tiny.sma";
     setupTime = 0;
     totalKernelTime = 0;
@@ -78,9 +72,6 @@ public:
      */
   DiagSpMV(const char* name)
     : SDKSample(name){
-    radius = 1;
-    width = 4;
-    height = 4;
     file = "tiny.sma";
     setupTime = 0;
     totalKernelTime = 0;
