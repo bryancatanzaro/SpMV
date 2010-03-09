@@ -144,7 +144,7 @@ DiagSpMV::setupCL(void)
             CL_SUCCESS,
             "clGetContextInfo failed."))
         return SDK_FAILURE;
-
+    
     /* Now allocate memory for device list based on the size we got earlier */
     devices = (cl_device_id *)malloc(deviceListSize);
     if(devices==NULL) {
@@ -246,7 +246,7 @@ DiagSpMV::setupCL(void)
         return SDK_FAILURE;
 
     /* create a cl program executable for all the devices specified */
-    status = clBuildProgram(program, 1, devices, NULL, NULL, NULL);
+    status = clBuildProgram(program, 2, devices, NULL, NULL, NULL);
 
     char *build_log;
     size_t ret_val_size;
@@ -269,6 +269,24 @@ DiagSpMV::setupCL(void)
       return SDK_FAILURE;
     }
 
+    cl_build_status build_status;
+    status = clGetProgramBuildInfo(program, devices[0], CL_PROGRAM_BUILD_STATUS, sizeof(cl_build_status), &build_status, NULL);
+
+    if (build_status != CL_BUILD_SUCCESS) {
+      std::cout << "clBuildProgram failed." << std::endl;
+    } else {
+      std::cout << "CL_BUILD_SUCCESS was reported" << std::endl;
+    }
+
+    cl_uint num_devices;
+    clGetProgramInfo(program, CL_PROGRAM_NUM_DEVICES, sizeof(cl_uint), &num_devices, NULL);
+    std::cout << "This program was built for " << num_devices << " devices." << std::endl;
+    size_t *binary_sizes = new size_t[num_devices];
+    clGetProgramInfo(program, CL_PROGRAM_BINARY_SIZES, sizeof(size_t) * num_devices, binary_sizes, NULL);
+    for(int i = 0; i < num_devices; i++) {
+      std::cout << "Device " << i << " has a binary of " << binary_sizes[i] << " bytes." << std::endl;
+    }
+    
     /* get a kernel object handle for a kernel with the given name */
     kernel = clCreateKernel(program, "diagSpMV", &status);
     if(!sampleCommon->checkVal(
@@ -285,7 +303,7 @@ int
 DiagSpMV::runCLKernels(void)
 {
     cl_int   status;
-    cl_event *events = new cl_event[iterations];
+   
 
     size_t globalThreads[1];
     size_t localThreads[1];
@@ -348,7 +366,7 @@ DiagSpMV::runCLKernels(void)
     
 
    
-    globalThreads[0] = (nPoints - 1)/4 + 1;
+    globalThreads[0] = nPoints;
     localThreads[0]  = 128;
     if (localThreads[0] > globalThreads[0]) {
       localThreads[0] = globalThreads[0];
@@ -413,13 +431,12 @@ DiagSpMV::runCLKernels(void)
         return SDK_FAILURE;
 
 
-    int pitch_in_float_4 = pitchf/4;
     
     status = clSetKernelArg(
                     kernel, 
                     3, 
                     sizeof(cl_int), 
-                    (void *)&pitch_in_float_4);
+                    (void *)&pitchf);
     if(!sampleCommon->checkVal(
             status,
             CL_SUCCESS,
@@ -470,31 +487,17 @@ DiagSpMV::runCLKernels(void)
     
     for(int i = 0; i < iterations; i++)
     {
-      if (i == 0) {
-        /* Enqueue a kernel run call */
-        status = clEnqueueNDRangeKernel(
-                                        commandQueue,
-                                        kernel,
-                                        1,
-                                        NULL,
-                                        globalThreads,
-                                        localThreads,
-                                        0,
-                                        NULL,
-                                        &events[0]);
-      } else {
-        /* Enqueue a kernel run call */
-        status = clEnqueueNDRangeKernel(
-                                        commandQueue,
-                                        kernel,
-                                        1,
-                                        NULL,
-                                        globalThreads,
-                                        localThreads,
-                                        1,
-                                        &events[i-1],
-                                        &events[i]);
-      }  
+      /* Enqueue a kernel run call */
+      status = clEnqueueNDRangeKernel(
+                                      commandQueue,
+                                      kernel,
+                                      1,
+                                      NULL,
+                                      globalThreads,
+                                      localThreads,
+                                      0,
+                                      NULL,
+                                      NULL);
       if(!sampleCommon->checkVal(
                                  status,
                                  CL_SUCCESS,
@@ -503,7 +506,7 @@ DiagSpMV::runCLKernels(void)
         return SDK_FAILURE;
       }
     }
-    status = clWaitForEvents(1, &events[iterations-1]);
+    status = clFinish(commandQueue);
     if(!sampleCommon->checkVal(
                                status,
                                CL_SUCCESS,
