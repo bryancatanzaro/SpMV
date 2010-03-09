@@ -51,4 +51,4 @@ void diagSpMV(__const int n,
   if (row + 2 < n) result[row+2] = accumulant.z;
   if (row + 3 < n) result[row+3] = accumulant.w;
   
- }
+}

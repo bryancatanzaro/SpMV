@@ -28,18 +28,8 @@ DiagSpMV::setupSpMV()
   std::cout <<" nPoints: " << nPoints;
   std::cout <<" pitchf: " << pitchf << std::endl;
   
-//   for(int i = 0; i < nDiag; i++) {
-//      for(int j = 0; j < nPoints; j++) {
-//        std::cout << matrix[i * pitchf + j] << ", ";
-//      }
-//      std::cout << std::endl;
-//   }
+
   offsets = dia->get_offsets();
-//   std::cout << "-------------" << std::endl;
-//   std::cout << "Offsets: " << std::endl;
-//   for(int i = 0; i < nDiag; i++) {
-//     std::cout << offsets[i] << std::endl;
-//   }
   
   vector = (float*)malloc(sizeof(float) * nPoints);
   output = (float*)malloc(sizeof(float) * nPoints);
